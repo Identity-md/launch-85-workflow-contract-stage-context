@@ -1,0 +1,22 @@
+{
+  "kind": "evm_project",
+  "token": {
+    "contract": "Lastlight",
+    "name": "Lastlight",
+    "symbol": "LAST",
+    "decimals": 18
+  },
+  "pool": {
+    "pairedCurrency": "0x0000000000000000000000000000000000000000",
+    "fee": 3000,
+    "tickSpacing": 60,
+    "initialPrice": "79228162514264337593543950336"
+  },
+  "contracts": [
+    {
+      "contract": "Tontine",
+      "constructorArgs": ["$token"]
+    }
+  ],
+  "notes": "Lastlight is a survival game over LAST deposits. The launch consists of exactly two contracts from the accepted tree: src/Lastlight.sol (the reward token) and src/Tontine.sol (the single application contract).\n\nToken. Lastlight is a fixed-supply ERC-20 with name \"Lastlight\", symbol \"LAST\" and 18 decimals, matching the constants declared in src/Lastlight.sol. Its constructor takes no arguments and mints TOTAL_SUPPLY = 1,000,000,000 LAST (10^27 minor units) to msg.sender, which is the factory at launch. There is no owner, mint, burn, pause or upgrade path, so the supply observed at launch is final. Supply, splits and allocations are policy and service concerns and deliberately do not appear here.\n\nApplication contract. Tontine is deployed after the token and its constructor takes a single address-typed argument, the LAST token (constructor(IERC20 token_), ABI type address), supplied as the backward reference $token. That is the only constructor argument; the reference fills an address parameter, as required. The constructor is nonpayable, reverts on the zero address, stores the token as an immutable and sets openUntil = block.timestamp + OPEN_PERIOD (30 days). No further configuration is needed and the factory makes no initialization calls, so no post-deployment setup is assumed or required.\n\nOwnership and privilege. Tontine has no owner, admin, fee recipient, pause switch, upgrade path or privileged beneficiary, so the manifest names no $owner argument and no wallet address: there is no constructor parameter for one. Nothing in the accepted source reads msg.sender in a constructor to assign a role. The only externally reachable value flow is a participant's own deposit in and the sole survivor's claim out.\n\nBehaviour the manifest describes. Participants join once with any positive LAST amount strictly before openUntil, pinging at least once every PING_INTERVAL (30 days); a ping exactly at the deadline still counts. A participant who is overdue may be evicted by anyone, forfeiting their deposit to the pot, except that the last remaining participant can never be evicted. Once the open period has passed and exactly one participant remains, that participant claims the whole pot. Both external calls to the token (transferFrom on join, transfer on claim) happen after all state changes, following checks-effects-interactions, and every state change emits an event.\n\nPool. The pool pairs against native ETH on Sepolia (pairedCurrency is the zero address) with fee 3000, tickSpacing 60 and initialPrice 79228162514264337593543950336, the sqrtPriceX96 value for a 1:1 starting ratio. There is no hook. These are pool initialization parameters only and are not a market valuation or a promise about price.\n\nScope. This manifest describes only the accepted implementation; it is explanatory and carries no deployment authority. Chain selection, policy version, supply split, treasury, contributor lock, gas ceiling, allocations, and source/ABI/bytecode hashes and attestation are owned by policy and the launch services, not by this file. No contract identifier here is MerkleDistributor, all identifiers are unique ASCII of at most 32 characters, and the only reference used points backward to the launch token."
+}
